@@ -39,7 +39,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(u);
     if (u) {
        let isUserAdmin = false;
-       if (u.email?.toLowerCase() === 'www.arzan07@gmail.com') {
+      if (u.email?.toLowerCase() === 'www.arzan07@gmail.com'
+           || u.email?.toLowerCase() === 'arafat18mollah2005@gmail.com'
+       ) {
            isUserAdmin = true;
        }
        
