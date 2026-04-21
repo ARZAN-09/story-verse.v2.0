@@ -1,0 +1,134 @@
+{
+  "entities": {
+    "Novel": {
+      "title": "Novel",
+      "description": "A webnovel series.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "coverImage": { "type": "string" },
+        "createdAt": { "type": "integer" }
+      },
+      "required": ["title", "description", "coverImage", "createdAt"]
+    },
+    "Volume": {
+      "title": "Volume",
+      "description": "A volume in a novel",
+      "type": "object",
+      "properties": {
+        "novelId": { "type": "string" },
+        "title": { "type": "string" },
+        "volumeNumber": { "type": "integer" }
+      },
+      "required": ["novelId", "title", "volumeNumber"]
+    },
+    "Arc": {
+      "title": "Arc",
+      "description": "An arc in a volume",
+      "type": "object",
+      "properties": {
+        "novelId": { "type": "string" },
+        "volumeId": { "type": "string" },
+        "title": { "type": "string" }
+      },
+      "required": ["novelId", "volumeId", "title"]
+    },
+    "Chapter": {
+      "title": "Chapter",
+      "description": "A chapter in an arc",
+      "type": "object",
+      "properties": {
+        "novelId": { "type": "string" },
+        "volumeId": { "type": "string" },
+        "arcId": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "chapterNumber": { "type": "integer" },
+        "createdAt": { "type": "integer" }
+      },
+      "required": ["novelId", "volumeId", "arcId", "title", "content", "chapterNumber", "createdAt"]
+    },
+    "Manhwa": {
+      "title": "Manhwa",
+      "description": "Manhwa comic chapter",
+      "type": "object",
+      "properties": {
+        "novelId": { "type": "string" },
+        "title": { "type": "string" },
+        "chapterNumber": { "type": "integer" },
+        "images": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["novelId", "title", "chapterNumber", "images"]
+    },
+    "Character": {
+      "title": "Character",
+      "description": "A character in the story",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "stats": { "type": "object" },
+        "image": { "type": "string" },
+        "model3DUrl": { "type": "string" }
+      },
+      "required": ["name", "description", "stats", "image", "model3DUrl"]
+    },
+    "Media": {
+      "title": "Media",
+      "description": "Trailer or animation content",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["trailer", "animation"] },
+        "title": { "type": "string" },
+        "videoUrl": { "type": "string" },
+        "thumbnail": { "type": "string" }
+      },
+      "required": ["type", "title", "videoUrl", "thumbnail"]
+    },
+    "AdminConfig": {
+      "title": "AdminConfig",
+      "description": "Admins mapping",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "isAdmin": { "type": "boolean" }
+      },
+      "required": ["email", "isAdmin"]
+    }
+  },
+  "firestore": {
+    "/novels/{novelId}": {
+      "schema": { "$ref": "#/entities/Novel" },
+      "description": "All novels"
+    },
+    "/volumes/{volumeId}": {
+      "schema": { "$ref": "#/entities/Volume" },
+      "description": "All volumes"
+    },
+    "/arcs/{arcId}": {
+      "schema": { "$ref": "#/entities/Arc" },
+      "description": "All arcs"
+    },
+    "/chapters/{chapterId}": {
+      "schema": { "$ref": "#/entities/Chapter" },
+      "description": "All chapters"
+    },
+    "/manhwa/{manhwaId}": {
+      "schema": { "$ref": "#/entities/Manhwa" },
+      "description": "All manhwa"
+    },
+    "/characters/{characterId}": {
+      "schema": { "$ref": "#/entities/Character" },
+      "description": "All characters"
+    },
+    "/media/{mediaId}": {
+      "schema": { "$ref": "#/entities/Media" },
+      "description": "All media"
+    },
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/AdminConfig" },
+      "description": "Admin users by their user ID"
+    }
+  }
+}

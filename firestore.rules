@@ -1,0 +1,147 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() { 
+      return isSignedIn() && (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) || request.auth.token.email == "www.arzan07@gmail.com"); 
+    }
+
+    // Novel Validation
+    function isValidNovel(data) {
+      return data.keys().hasAll(['title', 'description', 'coverImage', 'createdAt']) && data.keys().size() <= 4 &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+             data.description is string && data.description.size() <= 5000 &&
+             data.coverImage is string && data.coverImage.size() <= 1000 &&
+             data.createdAt is number;
+    }
+
+    match /novels/{novelId} {
+      allow read: if true;
+      allow create: if isValidId(novelId) && isAdmin() && isValidNovel(incoming());
+      allow update: if isValidId(novelId) && isAdmin() && isValidNovel(incoming()) && incoming().createdAt == existing().createdAt;
+      allow delete: if isValidId(novelId) && isAdmin();
+    }
+
+    // Volume Validation
+    function isValidVolume(data) {
+      return data.keys().hasAll(['novelId', 'title', 'volumeNumber']) && data.keys().size() <= 3 &&
+             data.novelId is string && data.novelId.size() > 0 && data.novelId.size() <= 128 &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+             data.volumeNumber is int && data.volumeNumber >= 0;
+    }
+
+    match /volumes/{volumeId} {
+      allow read: if true;
+      allow create: if isValidId(volumeId) && isAdmin() && isValidVolume(incoming());
+      allow update: if isValidId(volumeId) && isAdmin() && isValidVolume(incoming());
+      allow delete: if isValidId(volumeId) && isAdmin();
+    }
+
+    // Arc Validation
+    function isValidArc(data) {
+      return data.keys().hasAll(['novelId', 'volumeId', 'title']) && data.keys().size() <= 3 &&
+             data.novelId is string && data.novelId.size() > 0 && data.novelId.size() <= 128 &&
+             data.volumeId is string && data.volumeId.size() > 0 && data.volumeId.size() <= 128 &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200;
+    }
+
+    match /arcs/{arcId} {
+      allow read: if true;
+      allow create: if isValidId(arcId) && isAdmin() && isValidArc(incoming());
+      allow update: if isValidId(arcId) && isAdmin() && isValidArc(incoming());
+      allow delete: if isValidId(arcId) && isAdmin();
+    }
+
+    // Chapter Validation
+    function isValidChapter(data) {
+      return data.keys().hasAll(['novelId', 'volumeId', 'arcId', 'title', 'content', 'chapterNumber', 'createdAt']) && data.keys().size() <= 7 &&
+             data.novelId is string && data.novelId.size() > 0 && data.novelId.size() <= 128 &&
+             data.volumeId is string && data.volumeId.size() > 0 && data.volumeId.size() <= 128 &&
+             data.arcId is string && data.arcId.size() > 0 && data.arcId.size() <= 128 &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+             data.content is string && data.content.size() <= 50000 &&
+             data.chapterNumber is int && data.chapterNumber >= 0 &&
+             data.createdAt is number;
+    }
+
+    match /chapters/{chapterId} {
+      allow read: if true;
+      allow create: if isValidId(chapterId) && isAdmin() && isValidChapter(incoming());
+      allow update: if isValidId(chapterId) && isAdmin() && isValidChapter(incoming()) && incoming().createdAt == existing().createdAt;
+      allow delete: if isValidId(chapterId) && isAdmin();
+    }
+
+    // Manhwa Validation
+    function isValidManhwa(data) {
+      return data.keys().hasAll(['novelId', 'title', 'chapterNumber', 'images']) && data.keys().size() <= 4 &&
+             data.novelId is string && data.novelId.size() > 0 && data.novelId.size() <= 128 &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+             data.chapterNumber is int && data.chapterNumber >= 0 &&
+             data.images is list && data.images.size() <= 100 && (data.images.size() == 0 || (data.images[0] is string && data.images[0].size() <= 1000));
+    }
+
+    match /manhwa/{manhwaId} {
+      allow read: if true;
+      allow create: if isValidId(manhwaId) && isAdmin() && isValidManhwa(incoming());
+      allow update: if isValidId(manhwaId) && isAdmin() && isValidManhwa(incoming());
+      allow delete: if isValidId(manhwaId) && isAdmin();
+    }
+
+    // Character Validation
+    function isValidCharacter(data) {
+      return data.keys().hasAll(['name', 'description', 'stats', 'image', 'model3DUrl']) && data.keys().size() <= 5 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 200 &&
+             data.description is string && data.description.size() <= 5000 &&
+             data.stats is map && data.stats.size() <= 20 &&
+             data.image is string && data.image.size() <= 1000 &&
+             data.model3DUrl is string && data.model3DUrl.size() <= 1000;
+    }
+
+    match /characters/{characterId} {
+      allow read: if true;
+      allow create: if isValidId(characterId) && isAdmin() && isValidCharacter(incoming());
+      allow update: if isValidId(characterId) && isAdmin() && isValidCharacter(incoming());
+      allow delete: if isValidId(characterId) && isAdmin();
+    }
+
+    // Media Validation
+    function isValidMedia(data) {
+      return data.keys().hasAll(['type', 'title', 'videoUrl', 'thumbnail']) && data.keys().size() <= 4 &&
+             data.type is string && (data.type == 'trailer' || data.type == 'animation') &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+             data.videoUrl is string && data.videoUrl.size() <= 1000 &&
+             data.thumbnail is string && data.thumbnail.size() <= 1000;
+    }
+
+    match /media/{mediaId} {
+      allow read: if true;
+      allow create: if isValidId(mediaId) && isAdmin() && isValidMedia(incoming());
+      allow update: if isValidId(mediaId) && isAdmin() && isValidMedia(incoming());
+      allow delete: if isValidId(mediaId) && isAdmin();
+    }
+
+    // Admin Validation
+    function isValidAdminConfig(data) {
+       return data.keys().hasAll(['email', 'isAdmin']) && data.keys().size() <= 2 &&
+              data.email is string && data.email.size() <= 200 &&
+              data.isAdmin is bool;
+    }
+
+    match /admins/{adminId} {
+      allow read: if isAdmin();
+      allow create: if isValidId(adminId) && isAdmin() && isValidAdminConfig(incoming());
+      allow update: if isValidId(adminId) && isAdmin() && isValidAdminConfig(incoming());
+      allow delete: if isValidId(adminId) && isAdmin();
+    }
+  }
+}
